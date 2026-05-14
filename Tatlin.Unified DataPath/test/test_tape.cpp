@@ -281,6 +281,28 @@ TEST(SortTest, sort_inputOutputSizeMismatch_returnsOutputSizeMismatch) {
     EXPECT_EQ(status, tape::SortResult::OutputSizeMismatch);
 }
 
+TEST(SortTest, sort_wideRangeValues_returnsOkAndSortedOrder) {
+    TempFile inFile("sort_test_in_wide_range.bin");
+    TempFile outFile("sort_test_out_wide_range.bin");
+    writeIntsBinary(inFile.path, {
+        2147483647, -2147483647, 0, 1024, -999999, 42, -42, 7, -7, 500000000, -500000000
+    });
+    writeIntsBinary(outFile.path, std::vector<int>(11, 0));
+
+    auto inTape = tape::FileTape::open(inFile.path);
+    auto outTape = tape::FileTape::open(outFile.path);
+    ASSERT_TRUE(inTape.has_value());
+    ASSERT_TRUE(outTape.has_value());
+
+    auto status = tape::sort(*inTape, *outTape, sizeof(int) * 8, "tmp");
+    auto values = readAllTapeValues(*outTape);
+
+    EXPECT_EQ(status, tape::SortResult::Ok);
+    EXPECT_EQ(values, (std::vector<int>{
+        -2147483647, -500000000, -999999, -42, -7, 0, 7, 42, 1024, 500000000, 2147483647
+    }));
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
