@@ -1,10 +1,11 @@
 #pragma once
 
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <thread>
-#include <unistd.h>
 
 namespace tape {
     enum class TapeResult {
@@ -27,6 +28,9 @@ namespace tape {
 
         virtual TapeResult moveLeft() = 0;
         virtual TapeResult moveRight() = 0;
+        virtual TapeResult rewind() = 0;
+
+        virtual size_t size() = 0;
     };
 
     class FileTape : public ITape {
@@ -117,7 +121,12 @@ namespace tape {
             return TapeResult::Ok;
         }
 
-        std::size_t size() const {
+        TapeResult rewind() override {
+            _cursor = 0;
+            return TapeResult::Ok;
+        }
+
+        std::size_t size() override {
             return _size;
         }
 
@@ -198,33 +207,45 @@ namespace tape {
 
     class SlowedTape : public ITape {
         public:
-            SlowedTape(ITape& impl, int readDelay, int writeDelay, int leftDelay, int rightDelay) :
-                _impl(impl), _readDelay(readDelay), _writeDelay(writeDelay), _leftDelay(leftDelay), _rightDelay(rightDelay) {}
+            SlowedTape(std::unique_ptr<ITape> impl, Delay readDelay, Delay writeDelay, Delay leftDelay, Delay rightDelay, Delay rewindDelay) :
+                _impl(std::move(impl)), _readDelay(readDelay), _writeDelay(writeDelay),
+                _leftDelay(leftDelay), _rightDelay(rightDelay), _rewindDelay(rewindDelay) {}
 
-            std::optional<int> read() {
+            std::optional<int> read() override {
                 std::this_thread::sleep_for(_readDelay);
-                return _impl.read();
+                return _impl->read();
             }
 
-            TapeResult write(int input) {
+            TapeResult write(int input) override {
                 std::this_thread::sleep_for(_writeDelay);
-                return _impl.write(input);
+                return _impl->write(input);
             }
 
-            TapeResult moveLeft() {
+            TapeResult moveLeft() override {
                 std::this_thread::sleep_for(_leftDelay);
-                return _impl.moveLeft();
+                return _impl->moveLeft();
             }
 
-            TapeResult moveRight() {
+            TapeResult moveRight() override {
                 std::this_thread::sleep_for(_rightDelay);
-                return _impl.moveRight();
+                return _impl->moveRight();
             }
+
+            TapeResult rewind() override {
+                std::this_thread::sleep_for(_rewindDelay);
+                return _impl->rewind();
+            }
+
+            std::size_t size() override {
+                return _impl->size();
+            }
+
         private:
-            ITape& _impl;
+            std::unique_ptr<ITape> _impl;
             Delay _readDelay;
             Delay _writeDelay;
             Delay _leftDelay;
             Delay _rightDelay;
+            Delay _rewindDelay;
     };
 }
