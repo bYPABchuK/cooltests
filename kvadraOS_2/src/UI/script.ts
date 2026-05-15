@@ -1,6 +1,8 @@
 type CpuMetrics = {
   totalUsage: number;
   loadAvg1: number;
+  loadAvg5: number;
+  loadAvg15: number;
 };
 
 type MemMetrics = {
@@ -142,7 +144,7 @@ function buildSeriesList(m: MetricsResponse): SeriesDef[] {
       label: 'CPU',
       color: '#22d3ee',
       value: (x) => Number(x.cpu?.totalUsage || 0),
-      info: (x, v) => `CPU total: ${v.toFixed(2)}%\nload1: ${x.cpu?.loadAvg1 ?? 0}`,
+      info: (x, v) => `CPU total: ${v.toFixed(2)}%\nload1: ${x.cpu?.loadAvg1 ?? 0}\nload5: ${x.cpu?.loadAvg5 ?? 0}\nload15: ${x.cpu?.loadAvg15 ?? 0}`,
       format: (v) => `${v.toFixed(2)}%`
     },
     {
