@@ -1,0 +1,3 @@
+[submodule "kvadraOS_2/include/Ring-Buffer"]
+	path = kvadraOS_2/include/Ring-Buffer
+	url = https://github.com/jnk0le/Ring-Buffer
