@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>kvadraOS metrics</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="tabs">
+      <button class="tab active" id="tabMetrics">Metrics</button>
+      <button class="tab" id="tabProcesses">Processes</button>
+    </div>
+  </header>
+
+  <main id="viewMetrics" class="layout">
+    <aside class="sidebar">
+      <h3>Графики</h3>
+      <div id="seriesList" class="series-list"></div>
+    </aside>
+
+    <div id="splitter" class="splitter" aria-label="Resize panels"></div>
+
+    <section class="detail">
+      <h2 id="detailTitle">Метрика</h2>
+      <canvas id="detailChart" class="card chart" width="1000" height="420"></canvas>
+      <div id="detailInfo" class="card detail-info"></div>
+    </section>
+  </main>
+
+  <main id="viewProcesses" class="layout hidden">
+    <section class="detail full">
+      <h2>Processes</h2>
+      <div class="card">
+        <table class="process-table">
+          <thead>
+            <tr>
+              <th data-sort="pid">PID</th>
+              <th data-sort="nice">NI</th>
+              <th data-sort="uid">UID</th>
+              <th data-sort="threads">THR</th>
+              <th data-sort="cpuPercent">CPU%</th>
+              <th data-sort="memPercent">MEM%</th>
+              <th data-sort="rssBytes">RSS</th>
+              <th>Command</th>
+            </tr>
+          </thead>
+          <tbody id="processes"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/script.js"></script>
+</body>
+</html>

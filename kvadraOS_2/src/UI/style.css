@@ -1,0 +1,154 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+.topbar {
+  border-bottom: 1px solid #374151;
+  background: #0b1220;
+  padding: 8px 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: #22d3ee;
+  background: #0f2530;
+}
+
+.layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 25% 8px 1fr;
+}
+
+.card {
+  background: #1f2937;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sidebar {
+  border-right: 1px solid #374151;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.splitter {
+  width: 8px;
+  cursor: col-resize;
+  background: #111827;
+  border-left: 1px solid #374151;
+  border-right: 1px solid #374151;
+}
+
+.splitter:hover {
+  background: #1f2937;
+}
+
+.sidebar h3 {
+  margin-top: 0;
+}
+
+.series-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.series-btn {
+  width: 100%;
+  text-align: left;
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.series-btn.active {
+  border-color: #22d3ee;
+  background: #0f2530;
+}
+
+.detail {
+  padding: 16px;
+}
+
+.detail.full {
+  grid-column: 1 / -1;
+}
+
+.detail h2 {
+  margin-top: 0;
+}
+
+.detail-info {
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+
+.hidden {
+  display: none;
+}
+
+.process-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.process-table th,
+.process-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #2b3040;
+  text-align: left;
+}
+
+.process-table th {
+  color: #9aa4b2;
+  font-weight: 600;
+}
+
+.process-table th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.process-table th[data-sort]:hover {
+  color: #22d3ee;
+}
+
+.process-table td.command {
+  max-width: 540px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}
