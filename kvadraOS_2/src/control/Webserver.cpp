@@ -6,6 +6,7 @@
 #include <boost/beast/version.hpp>
 
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 
 namespace beast = boost::beast;
@@ -13,72 +14,102 @@ namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
 namespace control {
-    boost::json::object Webserver::_toJsonObject(const metrics::MetricSnapshot& snap) const {
-        boost::json::object root;
-        root["timestamp"] = static_cast<std::int64_t>(snap.timestamp);
+    std::string Webserver::_toJson(const metrics::MetricSnapshot& snap) const {
+        std::ostringstream ss;
+        ss << "{";
+        ss << "\"timestamp\":" << snap.timestamp << ",";
 
-        boost::json::object cpu;
-        cpu["totalUsage"] = snap.cpu.totalUsage;
-        cpu["loadAvg1"] = snap.cpu.loadAvg1;
-        cpu["loadAvg5"] = snap.cpu.loadAvg5;
-        cpu["loadAvg15"] = snap.cpu.loadAvg15;
-        boost::json::array perCore;
-        for (double v : snap.cpu.perCoreUsage) {
-            perCore.push_back(v);
+        ss << "\"cpu\":{";
+        ss << "\"totalUsage\":" << snap.cpu.totalUsage << ",";
+        ss << "\"loadAvg1\":" << snap.cpu.loadAvg1 << ",";
+        ss << "\"loadAvg5\":" << snap.cpu.loadAvg5 << ",";
+        ss << "\"loadAvg15\":" << snap.cpu.loadAvg15 << ",";
+        ss << "\"perCoreUsage\":[";
+        for (std::size_t i = 0; i < snap.cpu.perCoreUsage.size(); ++i) {
+            if (i) ss << ",";
+            ss << snap.cpu.perCoreUsage[i];
         }
-        cpu["perCoreUsage"] = std::move(perCore);
-        root["cpu"] = std::move(cpu);
+        ss << "]},";
 
-        boost::json::object mem;
-        mem["total"] = snap.mem.total;
-        mem["used"] = snap.mem.used;
-        mem["free"] = snap.mem.free;
-        mem["available"] = snap.mem.available;
-        root["mem"] = std::move(mem);
+        ss << "\"mem\":{";
+        ss << "\"total\":" << snap.mem.total << ",";
+        ss << "\"used\":" << snap.mem.used << ",";
+        ss << "\"free\":" << snap.mem.free << ",";
+        ss << "\"available\":" << snap.mem.available;
+        ss << "},";
 
-        boost::json::array disks;
-        for (const auto& d : snap.disks) {
-            boost::json::object obj;
-            obj["mountPoint"] = d.mountPoint;
-            obj["total"] = d.total;
-            obj["used"] = d.used;
-            obj["readBytesPerSec"] = d.readBytesPerSec;
-            obj["writeBytesPerSec"] = d.writeBytesPerSec;
-            disks.push_back(std::move(obj));
+        ss << "\"disks\":[";
+        for (std::size_t i = 0; i < snap.disks.size(); ++i) {
+            if (i) ss << ",";
+            const auto& d = snap.disks[i];
+            ss << "{";
+            ss << "\"mountPoint\":\"" << _jsonEscape(d.mountPoint) << "\",";
+            ss << "\"total\":" << d.total << ",";
+            ss << "\"used\":" << d.used << ",";
+            ss << "\"readBytesPerSec\":" << d.readBytesPerSec << ",";
+            ss << "\"writeBytesPerSec\":" << d.writeBytesPerSec;
+            ss << "}";
         }
-        root["disks"] = std::move(disks);
+        ss << "],";
 
-        boost::json::array processes;
-        for (const auto& p : snap.processes) {
-            boost::json::object obj;
-            obj["pid"] = p.pid;
-            obj["nice"] = p.nice;
-            obj["command"] = p.command;
-            obj["threads"] = p.threads;
-            obj["uid"] = p.uid;
-            obj["memPercent"] = p.memPercent;
-            obj["cpuPercent"] = p.cpuPercent;
-            obj["rssBytes"] = p.rssBytes;
-            processes.push_back(std::move(obj));
+        ss << "\"processes\":[";
+        for (std::size_t i = 0; i < snap.processes.size(); ++i) {
+            if (i) ss << ",";
+            const auto& p = snap.processes[i];
+            ss << "{";
+            ss << "\"pid\":" << p.pid << ",";
+            ss << "\"nice\":" << p.nice << ",";
+            ss << "\"command\":\"" << _jsonEscape(p.command) << "\",";
+            ss << "\"threads\":" << p.threads << ",";
+            ss << "\"uid\":" << p.uid << ",";
+            ss << "\"memPercent\":" << p.memPercent << ",";
+            ss << "\"cpuPercent\":" << p.cpuPercent << ",";
+            ss << "\"rssBytes\":" << p.rssBytes;
+            ss << "}";
         }
-        root["processes"] = std::move(processes);
+        ss << "]";
 
-        return root;
+        ss << "}";
+        return ss.str();
     }
 
-    boost::json::array Webserver::_toJsonArray(const std::vector<metrics::MetricSnapshot>& snaps) const {
-        boost::json::array arr;
-        for (const auto& snap : snaps) {
-            arr.push_back(_toJsonObject(snap));
+    std::string Webserver::_toJson(const std::vector<metrics::MetricSnapshot>& snaps) const {
+        std::ostringstream ss;
+        ss << "[";
+        for (std::size_t i = 0; i < snaps.size(); ++i) {
+            if (i) ss << ",";
+            ss << _toJson(snaps[i]);
         }
-        return arr;
+        ss << "]";
+        return ss.str();
+    }
+
+    std::string Webserver::_jsonEscape(const std::string& input) const {
+        std::ostringstream out;
+        for (unsigned char ch : input) {
+            switch (ch) {
+                case '"': out << "\\\""; break;
+                case '\\': out << "\\\\"; break;
+                case '\b': out << "\\b"; break;
+                case '\f': out << "\\f"; break;
+                case '\n': out << "\\n"; break;
+                case '\r': out << "\\r"; break;
+                case '\t': out << "\\t"; break;
+                default:
+                    if (ch < 0x20) {
+                        out << "\\u" << std::hex << std::uppercase << std::setw(4)
+                            << std::setfill('0') << static_cast<int>(ch) << std::dec;
+                    } else {
+                        out << static_cast<char>(ch);
+                    }
+            }
+        }
+        return out.str();
     }
 
     std::string Webserver::_readTextFile(const std::string& path) const {
         std::ifstream file(path);
-        if (!file.good()) {
-            return "";
-        }
+        if (!file.good()) return "";
         std::ostringstream ss;
         ss << file.rdbuf();
         return ss.str();
@@ -128,18 +159,14 @@ namespace control {
             auto snap = _storage->lastSnap();
             res.result(http::status::ok);
             res.set(http::field::content_type, "application/json");
-            if (snap.has_value()) {
-                res.body() = boost::json::serialize(_toJsonObject(*snap));
-            } else {
-                res.body() = "{}";
-            }
+            res.body() = snap.has_value() ? _toJson(*snap) : "{}";
         });
 
         _router.addGet("/api/history", [this](const HttpRouter::Request&, HttpRouter::Response& res) {
             auto snaps = _storage->snapshots();
             res.result(http::status::ok);
             res.set(http::field::content_type, "application/json");
-            res.body() = boost::json::serialize(_toJsonArray(snaps));
+            res.body() = _toJson(snaps);
         });
 
         net::io_context ioc{1};

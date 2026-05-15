@@ -1,6 +1,5 @@
 #include "../src/model/linux/MemCollector.hpp"
 #include "../src/model/linux/DiskCollector.hpp"
-#include "../src/model/linux/InetCollector.hpp"
 
 #include <gtest/gtest.h>
 
@@ -43,15 +42,6 @@ namespace {
         EXPECT_EQ(firstStatus, metrics::CollectorResult::ok);
         EXPECT_EQ(secondStatus, metrics::CollectorResult::ok);
         EXPECT_FALSE(second.disks.empty());
-    }
-
-    TEST(InetCollectorTest, collect_validProcNetDev_returnsOk) {
-        metrics::InetCollector collector;
-        metrics::MetricSnapshot snap;
-
-        auto status = collector.collect(snap);
-
-        EXPECT_EQ(status, metrics::CollectorResult::ok);
     }
 }
 

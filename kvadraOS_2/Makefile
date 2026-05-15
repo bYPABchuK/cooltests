@@ -1,7 +1,7 @@
 CXX := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -I./src -I./include
 LDFLAGS := -lgtest -pthread
-WEB_LDFLAGS := -pthread -lboost_json
+WEB_LDFLAGS := -pthread
 
 TEST_BIN := bin/test_collectors
 TEST_SRCS := \
@@ -19,8 +19,6 @@ WEB_SRCS := \
 	src/model/linux/MemCollector.cpp \
 	src/model/linux/DiskCollector.cpp \
 	src/model/linux/ProcessCollector.cpp
-
-all: test
 
 ui:
 	npx tsc -p src/UI/tsconfig.json
