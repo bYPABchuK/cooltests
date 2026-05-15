@@ -13,17 +13,17 @@
 
 # dependences
 ## динамические для самого сервера
-    linux-vdso.so.1
-    libstdc++.so.6
-    libm.so.6
-    libgcc_s.so.1
-    libc.so.6
+    boost > 1.74
+    GCC > 4.10
+    GLibcxx > 3.429
+    Glibc > 2.9
 ## для компиляции ts
     typescript > 4.9.5
 
 # build
 
 ```
+git clone https://github.com/bYPABchuK/cooltests/
 cd kvadraOS_2
 // npm install typescript (если ещё нет)
 make webui

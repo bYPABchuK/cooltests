@@ -6,8 +6,8 @@
     http://202.71.13.178:8080
 
 # Изображения
-![alt text](image.png)
-![alt text](image-1.png)
+![alt text](/kvadraOS_2/image.png)
+![alt text](/kvadraOS_2/image-1.png)
 
 вывод сразу всей доступной информации даже при перезаходе в браузер (за ограниченный промежуток пока)
 
