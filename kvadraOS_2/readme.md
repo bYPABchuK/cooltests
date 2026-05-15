@@ -24,7 +24,7 @@
 
 ```
 git clone https://github.com/bYPABchuK/cooltests/
-cd kvadraOS_2
+cd cooltests/kvadraOS_2
 // npm install typescript (если ещё нет)
 make webui
 ```
