@@ -116,6 +116,7 @@ namespace control {
     }
 
     void Webserver::run() {
+        beast::error_code ec;
         _router.addGet("/", [this](const HttpRouter::Request&, HttpRouter::Response& res) {
             auto html = _readTextFile(_uiRoot + "/index.html");
             if (html.empty()) {
@@ -178,7 +179,11 @@ namespace control {
 
             beast::flat_buffer buffer;
             http::request<http::string_body> req;
-            http::read(socket, buffer, req);
+            ec.clear();
+            http::read(socket, buffer, req, ec);
+            if (ec) {
+                continue;
+            }
 
             http::response<http::string_body> res;
             res.version(req.version());
@@ -197,9 +202,12 @@ namespace control {
             }
 
             res.prepare_payload();
-            http::write(socket, res);
+            ec.clear();
+            res.prepare_payload();http::write(socket, res, ec);
+            if (ec) {
+                continue;
+            }
 
-            beast::error_code ec;
             socket.shutdown(tcp::socket::shutdown_send, ec);
         }
     }
